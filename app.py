@@ -202,26 +202,49 @@ def predict(pil_image, age, sex, site):
 
 # ---------- Interfaccia ----------
 
-st.title("Classificazione multimodale di lesioni cutanee")
+st.title("Classificatore multimodale di lesioni cutanee")
 st.warning(
     "Prototipo di ricerca sviluppato per un project work universitario. "
     "NON è un dispositivo medico e non fornisce diagnosi: per qualsiasi dubbio "
     "su una lesione della pelle rivolgersi a un dermatologo."
 )
 
+NOMI_DIAGNOSI = {
+    'Actinic Keratosis': 'Cheratosi attinica',
+    'Basal Cell Carcinoma': 'Carcinoma basocellulare',
+    'Benign Keratosis': 'Cheratosi benigna',
+    'Dermatofibroma': 'Dermatofibroma',
+    'Melanocytic Nevus': 'Nevo melanocitico (neo)',
+    'Melanoma': 'Melanoma',
+    'Squamous Cell Carcinoma': 'Carcinoma squamocellulare',
+    'Vascular Lesion': 'Lesione vascolare',
+}
+
+NOMI_SEDE = {
+    'Head and neck': 'Testa e collo',
+    'Trunk': 'Tronco (petto, addome, schiena)',
+    'Upper extremity': 'Braccia e mani',
+    'Lower extremity': 'Gambe e piedi',
+    'Anogenital region': 'Regione anogenitale',
+    'NaN': 'Non specificato',
+}
+
+NOMI_SESSO = {
+    'female': 'Donna',
+    'male': 'Uomo',
+    'NaN': 'Non specificato',
+}
+
 opzioni_sesso = [s for s in sex_to_idx if s != '__unseen__']
 opzioni_sede = [s for s in site_to_idx if s != '__unseen__']
-
-def etichetta(valore):
-    return 'Non specificato' if valore == 'NaN' else valore
 
 col_input, col_output = st.columns(2)
 
 with col_input:
     foto = st.file_uploader("Carica un'immagine dermoscopica", type=['jpg', 'jpeg', 'png'])
     eta = st.number_input("Età (lascia vuoto se non nota)", min_value=0, max_value=100, value=None, step=5)
-    sesso = st.selectbox("Sesso", opzioni_sesso, format_func=etichetta)
-    sede = st.selectbox("Sede anatomica", opzioni_sede, format_func=etichetta)
+    sesso = st.selectbox("Sesso", opzioni_sesso, format_func=lambda v: NOMI_SESSO.get(v, v))
+    sede = st.selectbox("Sede anatomica", opzioni_sede, format_func=lambda v: NOMI_SEDE.get(v, v))
     avvia = st.button("Analizza", disabled=foto is None)
 
 with col_output:
@@ -239,11 +262,11 @@ with col_output:
         with st.spinner("Analisi in corso..."):
             classe, probabilita, overlay = predict(immagine, eta, sesso, sede)
 
-        st.subheader(f"Classe predetta: {classe}")
+        st.subheader(f"Classe predetta: {NOMI_DIAGNOSI.get(classe, classe)}")
         c1, c2 = st.columns(2)
         c1.image(immagine.resize((IMG_SIZE, IMG_SIZE)), caption="Immagine caricata")
         c2.image(overlay, caption="Grad-CAM: zone più rilevanti per la predizione", clamp=True)
 
         st.markdown("**Probabilità per classe**")
         for nome, p in sorted(probabilita.items(), key=lambda x: -x[1]):
-            st.progress(p, text=f"{nome}: {p:.1%}")
+            st.progress(p, text=f"{NOMI_DIAGNOSI.get(nome, nome)}: {p:.1%}")
