@@ -1,0 +1,30 @@
+{
+  "class_to_idx": {
+    "Actinic Keratosis": 0,
+    "Basal Cell Carcinoma": 1,
+    "Benign Keratosis": 2,
+    "Dermatofibroma": 3,
+    "Melanocytic Nevus": 4,
+    "Melanoma": 5,
+    "Squamous Cell Carcinoma": 6,
+    "Vascular Lesion": 7
+  },
+  "sex_to_idx": {
+    "NaN": 0,
+    "female": 1,
+    "male": 2,
+    "__unseen__": 3
+  },
+  "site_to_idx": {
+    "Anogenital region": 0,
+    "Head and neck": 1,
+    "Lower extremity": 2,
+    "NaN": 3,
+    "Trunk": 4,
+    "Upper extremity": 5,
+    "__unseen__": 6
+  },
+  "age_mean": 51.84178449536811,
+  "age_std": 16.518105708535114,
+  "img_size": 300
+}
