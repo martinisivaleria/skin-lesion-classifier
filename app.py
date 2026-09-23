@@ -332,7 +332,7 @@ with col_output:
         c1, c2 = st.columns(2)
         c1.image(immagine.resize((IMG_SIZE, IMG_SIZE)), caption="Immagine caricata")
         c2.image(overlay, caption="Grad-CAM: zone più rilevanti per la predizione", clamp=True)
-         with c2.popover("Cos'è Grad-CAM?"):
+        with c2.popover("Cos'è Grad-CAM?"):
             st.markdown(INFO_GRADCAM)
 
         st.markdown("**Probabilità per classe**")
