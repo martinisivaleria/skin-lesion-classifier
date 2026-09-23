@@ -225,7 +225,7 @@ with col_input:
     avvia = st.button("Analizza", disabled=foto is None)
 
 with col_output:
-        if avvia:
+    if avvia:
         immagine = Image.open(foto).convert('RGB')
         image_t = eval_transform(immagine).unsqueeze(0)
 
