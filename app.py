@@ -200,12 +200,9 @@ def predict(pil_image, age, sex, site):
     return class_names[pred_class], probabilita, overlay
 
 
-# ---------- Interfaccia ----------
+## ---------- Interfaccia ----------
 
-st.title("Classificatore multimodale di lesioni cutanee")
-st.warning(
-    "**Questa applicazione è stata realizzata a scopo didattico, non è uno strumento diagnostico e i suoi risultati non sostituiscono il parere di un medico.**"
-)
+# ---------- Dizionari -----------
 
 NOMI_DIAGNOSI = {
     'Actinic Keratosis': 'Cheratosi attinica',
@@ -232,6 +229,77 @@ NOMI_SESSO = {
     'male': 'Uomo',
     'NaN': 'Non specificato',
 }
+
+INFO_PROGETTO = """
+**Obiettivo.** Questa applicazione permette di provare un modello di intelligenza artificiale
+che classifica le lesioni cutanee in 8 categorie. Il modello è *multimodale*: combina la foto
+dermoscopica della lesione con alcuni dati clinici del paziente (età, sesso e sede della lesione),
+come farebbe un medico nella valutazione.
+
+**Dati.** Il modello è stato addestrato su circa 11.700 immagini dermoscopiche della collezione
+pubblica HAM10000 (ISIC Archive), ciascuna accompagnata dai dati clinici del paziente.
+
+**Cosa caratterizza questo lavoro**
+
+- **Una valutazione più realistica.** Nel dataset la stessa lesione compare spesso in più foto.
+  E' stato statto in modo che tutte le foto di una lesione finissero nello stesso gruppo (addestramento,
+  validazione o test): così da valutare il modello solo su lesioni davvero mai viste. Diversi
+  studi non adottano questo accorgimento e ottengono risultati più alti ma meno affidabili.
+- **Un problema più difficile.** Il modello distingue 8 tipi di lesione, incluso il carcinoma
+  squamocellulare, talvolta escluso negli studi di riferimento perché tra i più difficili da riconoscere.
+- **Esperimenti controllati.** E' stato fatto un confronto sequenziale tra i vari parametri che influenzavano le performance del modello: il modo
+  di combinare immagine e dati clinici, la risoluzione delle immagini, la funzione di errore e
+  l'intensità della data augmentation. Il miglioramento più grande è venuto dall'aumento della
+  risoluzione, che aiuta a cogliere i dettagli fini della superficie della lesione.
+- **Attenzione alle lesioni rare.** Nel dataset alcune lesioni sono molto più frequenti di altre
+  (i nei sono oltre la metà delle immagini, altre classi ne hanno poche centinaia). Durante
+  l'addestramento le classi sono state bilanciate, mostrando al modello le lesioni rare tanto spesso
+  quanto quelle comuni, in aggiunta, il modello finale è stato scelto con una metrica che dà lo stesso peso a
+  tutte le 8 classi. 
+- **Risultati.** Il test finale è stato eseguito una sola volta, alla fine: il modello
+  riconosce correttamente circa 86 lesioni su 100, con prestazioni quasi identiche a quelle
+  osservate in fase di sviluppo, segno che i risultati non sono "gonfiati".
+- **Trasparenza.** L'app mostra, con la tecnica Grad-CAM, le zone dell'immagine su cui il modello
+  si è basato, e rifiuta le immagini che non somigliano a una dermoscopia.
+"""
+
+
+INFO_LESIONI = """
+| Lesione | Natura | In breve |
+|---|---|---|
+| Nevo melanocitico (neo) | Benigna | Il comune neo: un accumulo di cellule che producono pigmento. |
+| Cheratosi benigna | Benigna | Macchie o rilievi della pelle frequenti con l'età. |
+| Dermatofibroma | Benigna | Piccolo nodulo duro della pelle. |
+| Lesione vascolare | Benigna | Lesioni formate da piccoli vasi sanguigni. |
+| Cheratosi attinica | Precancerosa | Dovuta all'esposizione al sole; se non trattata può evolvere in carcinoma squamocellulare. |
+| Carcinoma basocellulare | Maligna | Il tumore della pelle più frequente; cresce lentamente e raramente si diffonde, ma va trattato. |
+| Carcinoma squamocellulare | Maligna | Tumore della pelle che in alcuni casi può diffondersi ad altri organi. |
+| Melanoma | Maligna | Il più aggressivo tra questi tumori; una diagnosi precoce è fondamentale. |
+
+*Descrizioni generali a scopo informativo: non sostituiscono il parere di un medico.*
+"""
+
+INFO_GRADCAM = """
+**Grad-CAM** è una tecnica che mostra *dove ha guardato* il modello per prendere la sua decisione.
+
+I colori sovrapposti all'immagine indicano quanto ogni zona ha influito sulla predizione:
+**rosso** molto, **giallo e verde** in modo moderato, **blu** poco o nulla.
+
+Serve a capire se il modello si è concentrato sulla lesione o su dettagli irrilevanti
+(peli, bordi della foto, riflessi). Non indica dove si trova un eventuale tumore:
+mostra solo il ragionamento del modello.
+"""
+
+st.title("Classificatore multimodale di lesioni cutanee")
+st.warning(
+    "**Questa applicazione è stata realizzata a scopo didattico, non è uno strumento diagnostico e i suoi risultati non sostituiscono il parere di un medico.**"
+)
+
+info1, info2 = st.columns(2)
+with info1.expander("Informazioni sul progetto"):
+    st.markdown(INFO_PROGETTO)
+with info2.expander("Le lesioni che il modello riconosce"):
+    st.markdown(INFO_LESIONI)
 
 opzioni_sesso = [s for s in sex_to_idx if s != '__unseen__']
 opzioni_sede = [s for s in site_to_idx if s != '__unseen__']
@@ -264,6 +332,8 @@ with col_output:
         c1, c2 = st.columns(2)
         c1.image(immagine.resize((IMG_SIZE, IMG_SIZE)), caption="Immagine caricata")
         c2.image(overlay, caption="Grad-CAM: zone più rilevanti per la predizione", clamp=True)
+         with c2.popover("Cos'è Grad-CAM?"):
+            st.markdown(INFO_GRADCAM)
 
         st.markdown("**Probabilità per classe**")
         for nome, p in sorted(probabilita.items(), key=lambda x: -x[1]):
