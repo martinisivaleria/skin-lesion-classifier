@@ -204,9 +204,7 @@ def predict(pil_image, age, sex, site):
 
 st.title("Classificatore multimodale di lesioni cutanee")
 st.warning(
-    "Prototipo di ricerca sviluppato per un project work universitario. "
-    "NON è un dispositivo medico e non fornisce diagnosi: per qualsiasi dubbio "
-    "su una lesione della pelle rivolgersi a un dermatologo."
+    "**Questa applicazione è stata realizzata a scopo didattico, non è uno strumento diagnostico e i suoi risultati non sostituiscono il parere di un medico.**"
 )
 
 NOMI_DIAGNOSI = {
@@ -244,7 +242,7 @@ with col_input:
     foto = st.file_uploader("Carica un'immagine dermoscopica", type=['jpg', 'jpeg', 'png'])
     eta = st.number_input("Età (lascia vuoto se non nota)", min_value=0, max_value=100, value=None, step=5)
     sesso = st.selectbox("Sesso", opzioni_sesso, format_func=lambda v: NOMI_SESSO.get(v, v))
-    sede = st.selectbox("Sede anatomica", opzioni_sede, format_func=lambda v: NOMI_SEDE.get(v, v))
+    sede = st.selectbox("Sede anatomica", opzioni_sede, index=opzioni_sede.index('NaN'), format_func=lambda v: NOMI_SEDE.get(v, v))
     avvia = st.button("Analizza", disabled=foto is None)
 
 with col_output:
