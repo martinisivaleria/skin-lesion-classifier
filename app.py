@@ -128,6 +128,10 @@ age_mean = artefatti['age_mean']
 age_std = artefatti['age_std']
 IMG_SIZE = artefatti['img_size']
 class_names = [c for c, i in sorted(class_to_idx.items(), key=lambda x: x[1])]
+ood = np.load('stats_final.npz')
+medie_classi = ood['medie_classi']
+precisione = ood['precisione']
+soglia_ood = float(ood['soglia'])
 
 device = torch.device('cpu')
 
@@ -156,6 +160,13 @@ def carica_modello():
 
 model = carica_modello()
 
+# ----------------- Calcolo della distanza tra le feature dell'immagine input e le medie salvate -----------------
+def distanza_ood(image_t):
+    with torch.no_grad():
+        feat = model.image_backbone(image_t).numpy()     # (1, 1536)
+    diff = feat - medie_classi                           # (8, 1536): differenza da ciascun profilo
+    distanze = ((diff @ precisione) * diff).sum(axis=1)  # distanza di Mahalanobis da ciascuna classe
+    return distanze.min()
 
 # ---------- Preprocessing e predizione ----------
 
@@ -214,8 +225,17 @@ with col_input:
     avvia = st.button("Analizza", disabled=foto is None)
 
 with col_output:
-    if avvia:
-        immagine = Image.open(foto)
+        if avvia:
+        immagine = Image.open(foto).convert('RGB')
+        image_t = eval_transform(immagine).unsqueeze(0)
+
+        if distanza_ood(image_t) > soglia_ood:
+            st.error(
+                "L'immagine caricata non sembra un'immagine dermoscopica, non è possibile procedere con la classificazione. "
+                "Il modello è stato addestrato solo su immagini dermoscopiche di lesioni cutanee."
+            )
+            st.stop()
+
         with st.spinner("Analisi in corso..."):
             classe, probabilita, overlay = predict(immagine, eta, sesso, sede)
 
