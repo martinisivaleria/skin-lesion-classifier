@@ -261,12 +261,11 @@ la classificazione rispetto all'uso della sola immagine.
   stesso peso a tutte le classi.
 - **Esperimenti controllati.** E' stato fatto un confronto sequenziale tra i vari parametri che influenzavano le performance del modello: il modo
   di combinare immagine e dati clinici, la risoluzione delle immagini, la funzione di errore e
-  l'intensità della data augmentation. Il miglioramento più grande è venuto dall'aumento della
-  risoluzione, che aiuta a cogliere i dettagli fini della superficie della lesione.
+  l'intensità della data augmentation. 
 
 #### 🔍 Trasparenza
 - **Grad-CAM** mostra le zone dell'immagine che hanno influenzato maggiormente la predizione.
-- Un **filtro di coerenza** basato sulla distanza di Mahalanobis nello spazio delle feature
+- Per rendere l'applicazione più efficiente è stato implementato un **filtro di coerenza** basato sulla distanza di Mahalanobis nello spazio delle feature che
   rifiuta le immagini troppo diverse da quelle di training. Sul test set accetta il 93,8%
   delle dermoscopie reali; resta però un filtro di base, che non intercetta tutte le immagini estranee.
 """
