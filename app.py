@@ -259,9 +259,9 @@ la classificazione rispetto all'uso della sola immagine.
 - **Gestione dello sbilanciamento**: in addestramento le classi rare vengono campionate più
   spesso (*weighted sampling*); il modello migliore non è stato scelto tramite l'accuratezza, ma in base all'**F1 macro**, che dà lo
   stesso peso a tutte le classi.
-- **Esperimenti controllati.** E' stato fatto un confronto sequenziale tra i vari parametri che influenzavano le performance del modello: il modo
+- **Esperimenti controllati**: è stato fatto un confronto sequenziale tra i vari parametri che influenzavano le performance del modello: il modo
   di combinare immagine e dati clinici, la risoluzione delle immagini, la funzione di errore e
-  l'intensità della data augmentation. 
+  l'intensità della data augmentation, al fine di scegliere la combinazione più performante.
 
 #### 🔍 Trasparenza
 - **Grad-CAM** mostra le zone dell'immagine che hanno influenzato maggiormente la predizione.
