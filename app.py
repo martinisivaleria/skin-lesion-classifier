@@ -301,12 +301,11 @@ mostra solo il ragionamento del modello.
 st.title("Classificatore multimodale di lesioni cutanee")
 st.info(
     "Carica un'immagine dermoscopica di una lesione della pelle e, se li conosci, inserisci età, "
-    "sesso e sede della lesione. Premendo **Analizza**, il modello stima a quale di 8 tipi di lesione "
-    "appartiene e mostra, con una mappa colorata, le zone dell'immagine su cui si è basato.\n\n"
-    "⚠️ **Attenzione:** si tratta di un prototipo di ricerca sviluppato per un project work universitario, "
-    "non di un dispositivo medico. I risultati non costituiscono una diagnosi e possono essere errati "
-    "anche quando la probabilità indicata è alta. Per qualsiasi dubbio su una lesione rivolgersi sempre "
-    "a un dermatologo. Le immagini caricate non vengono salvate."
+    "sesso e sede della lesione. Premendo **Analizza**, il modello stima a quale tipo di lesione "
+    "appartiene.\n\n"
+    "⚠️ **Attenzione:** si tratta di un prototipo sviluppato a scopo di ricerca, "
+    "non rappresenta un dispositivo medico. I risultati non costituiscono una diagnosi. Per qualsiasi dubbio rivolgersi sempre "
+    "a un dermatologo."
 )
 
 info1, info2 = st.columns(2)
