@@ -231,36 +231,44 @@ NOMI_SESSO = {
 }
 
 INFO_PROGETTO = """
-**Obiettivo.** Questa applicazione permette di provare un modello di intelligenza artificiale
-che classifica le lesioni cutanee in 8 categorie. Il modello è *multimodale*: combina la foto
-dermoscopica della lesione con alcuni dati clinici del paziente (età, sesso e sede della lesione),
-come farebbe un medico nella valutazione.
+#### 🎯 Obiettivo 
+Classificare le lesioni cutanee in 8 categorie con un modello **multimodale**, che combina
+l'immagine dermoscopica con i dati clinici del paziente (età, sesso e sede anatomica), come
+avviene nella valutazione medica. Diversi studi mostrano che integrare i dati clinici migliora
+la classificazione rispetto all'uso della sola immagine.
 
-**Dati.** Il modello è stato addestrato su circa 11.700 immagini dermoscopiche della collezione
-pubblica HAM10000 (ISIC Archive), ciascuna accompagnata dai dati clinici del paziente.
+#### 🗂️ Dati 
+- Per l'allenamento del modello sono state utilizzate **11.720 immagini dermoscopiche** della collezione pubblica HAM10000 (ISIC Archive),
+  relative a **8 lesioni** distinte, complete di metadati clinici dei pazienti.
+- **Split raggruppato per lesione** (70% training, 15% validation, 15% test): nel dataset la stessa lesione compare spesso in più foto, in questo studio
+  tutte le foto della stessa lesione finiscono nello stesso insieme, ciò ha consentito di valutare il modello solo su
+  lesioni mai viste. Molti studi basati sullo stesso dataset dividono per singola immagine, con il rischio che
+  la stessa lesione compaia sia in training sia in test (*data leakage*).
+- **Dati mancanti**: età imputata con la mediana del training; per sesso e sede è stata definita una categoria
+  esplicita "non specificato", distinta da quella riservata ai valori mai visti in training.
+- **Classi fortemente sbilanciate**: i nevi sono circa due terzi delle immagini, mentre
+  classi come dermatofibroma e lesioni vascolari ne hanno poche centinaia.
 
-**Cosa caratterizza questo lavoro**
-
-- **Una valutazione più realistica.** Nel dataset la stessa lesione compare spesso in più foto.
-  E' stato statto in modo che tutte le foto di una lesione finissero nello stesso gruppo (addestramento,
-  validazione o test): così da valutare il modello solo su lesioni davvero mai viste. Diversi
-  studi non adottano questo accorgimento e ottengono risultati più alti ma meno affidabili.
-- **Un problema più difficile.** Il modello distingue 8 tipi di lesione, incluso il carcinoma
-  squamocellulare, talvolta escluso negli studi di riferimento perché tra i più difficili da riconoscere.
+#### 🧪 Metodo
+- **Ramo immagine**: è stata utilizzata una rete EfficientNet-B3 pre-addestrata su ImageNet e ri-addestrata sulle
+  immagini del dataset (transfer learning), con immagini a 300×300 pixel.
+- **Ramo clinico**: sesso e sede sono stati codificati con *embedding* appresi, l'età è stata normalizzata (Z-score);
+  una piccola rete li trasforma in un vettore di 64 valori.
+- **Fusione e classificazione**: le due rappresentazioni vengono concatenate e passate a
+  una rete di classificazione a tre strati.
+- **Gestione dello sbilanciamento**: in addestramento le classi rare vengono campionate più
+  spesso (*weighted sampling*); il modello migliore non è stato scelto tramite l'accuratezza, ma in base all'**F1 macro**, che dà lo
+  stesso peso a tutte le classi.
 - **Esperimenti controllati.** E' stato fatto un confronto sequenziale tra i vari parametri che influenzavano le performance del modello: il modo
   di combinare immagine e dati clinici, la risoluzione delle immagini, la funzione di errore e
   l'intensità della data augmentation. Il miglioramento più grande è venuto dall'aumento della
   risoluzione, che aiuta a cogliere i dettagli fini della superficie della lesione.
-- **Attenzione alle lesioni rare.** Nel dataset alcune lesioni sono molto più frequenti di altre
-  (i nei sono oltre la metà delle immagini, altre classi ne hanno poche centinaia). Durante
-  l'addestramento le classi sono state bilanciate, mostrando al modello le lesioni rare tanto spesso
-  quanto quelle comuni, in aggiunta, il modello finale è stato scelto con una metrica che dà lo stesso peso a
-  tutte le 8 classi. 
-- **Risultati.** Il test finale è stato eseguito una sola volta, alla fine: il modello
-  riconosce correttamente circa 86 lesioni su 100, con prestazioni quasi identiche a quelle
-  osservate in fase di sviluppo, segno che i risultati non sono "gonfiati".
-- **Trasparenza.** L'app mostra, con la tecnica Grad-CAM, le zone dell'immagine su cui il modello
-  si è basato, e rifiuta le immagini che non somigliano a una dermoscopia.
+
+#### 🔍 Trasparenza
+- **Grad-CAM** mostra le zone dell'immagine che hanno influenzato maggiormente la predizione.
+- Un **filtro di coerenza** basato sulla distanza di Mahalanobis nello spazio delle feature
+  rifiuta le immagini troppo diverse da quelle di training. Sul test set accetta il 93,8%
+  delle dermoscopie reali; resta però un filtro di base, che non intercetta tutte le immagini estranee.
 """
 
 
@@ -291,8 +299,14 @@ mostra solo il ragionamento del modello.
 """
 
 st.title("Classificatore multimodale di lesioni cutanee")
-st.warning(
-    "**Questa applicazione è stata realizzata a scopo didattico, non è uno strumento diagnostico e i suoi risultati non sostituiscono il parere di un medico.**"
+st.info(
+    "Carica un'immagine dermoscopica di una lesione della pelle e, se li conosci, inserisci età, "
+    "sesso e sede della lesione. Premendo **Analizza**, il modello stima a quale di 8 tipi di lesione "
+    "appartiene e mostra, con una mappa colorata, le zone dell'immagine su cui si è basato.\n\n"
+    "⚠️ **Attenzione:** si tratta di un prototipo di ricerca sviluppato per un project work universitario, "
+    "non di un dispositivo medico. I risultati non costituiscono una diagnosi e possono essere errati "
+    "anche quando la probabilità indicata è alta. Per qualsiasi dubbio su una lesione rivolgersi sempre "
+    "a un dermatologo. Le immagini caricate non vengono salvate."
 )
 
 info1, info2 = st.columns(2)
