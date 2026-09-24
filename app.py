@@ -297,60 +297,6 @@ Serve a capire se il modello si è concentrato sulla lesione o su dettagli irril
 mostra solo il ragionamento del modello.
 """
 
-SCHEMA_MODELLO = """
-digraph G {
-  graph [rankdir=TB, bgcolor="transparent", fontname="Helvetica", fontcolor="#e6e6e6", nodesep=0.35, ranksep=0.45];
-  node  [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, color="#555555", fontcolor="#111111"];
-  edge  [color="#9e9e9e", arrowsize=0.7];
-
-  subgraph cluster_input {
-    label="INPUT"; style="rounded,dashed"; color="#777777";
-    img   [label="Immagine dermoscopica\\n3 × 300 × 300", fillcolor="#bbdefb"];
-    eta   [label="Età", fillcolor="#c8e6c9"];
-    sesso [label="Sesso", fillcolor="#c8e6c9"];
-    sede  [label="Sede anatomica", fillcolor="#c8e6c9"];
-  }
-
-  subgraph cluster_img {
-    label="Ramo immagine"; style="rounded"; color="#64b5f6";
-    backbone [label="EfficientNet-B3\\npre-addestrata su ImageNet\\n(fine-tuning completo)", fillcolor="#90caf9"];
-    fmap     [label="Mappe di feature\\n1536 × 10 × 10", fillcolor="#bbdefb"];
-    gap      [label="Global Average Pooling\\nvettore di 1536 valori", fillcolor="#bbdefb"];
-  }
-
-  subgraph cluster_clin {
-    label="Ramo dati clinici"; style="rounded"; color="#81c784";
-    zs      [label="z-score\\n+ BatchNorm", fillcolor="#c8e6c9"];
-    embsex  [label="Embedding\\n4 categorie → 3 valori", fillcolor="#c8e6c9"];
-    embsite [label="Embedding\\n7 categorie → 5 valori", fillcolor="#c8e6c9"];
-    cat9    [label="Concatenazione\\n1 + 3 + 5 = 9 valori", fillcolor="#a5d6a7"];
-    fc1     [label="Linear 9 → 128\\nBatchNorm · ReLU · Dropout 0.3", fillcolor="#a5d6a7"];
-    fc2     [label="Linear 128 → 64\\nBatchNorm · ReLU", fillcolor="#a5d6a7"];
-  }
-
-  fusion [label="FUSIONE per concatenazione\\n1536 + 64 = 1600 valori", fillcolor="#ffcc80", fontsize=12];
-
-  subgraph cluster_head {
-    label="Testa di classificazione"; style="rounded"; color="#f06292";
-    h1 [label="Linear 1600 → 512\\nBatchNorm · ReLU · Dropout 0.5", fillcolor="#f8bbd0"];
-    h2 [label="Linear 512 → 256\\nBatchNorm · ReLU · Dropout 0.25", fillcolor="#f8bbd0"];
-    h3 [label="Linear 256 → 8\\n(logit)", fillcolor="#f8bbd0"];
-    sm [label="Softmax\\nprobabilità delle 8 classi", fillcolor="#f48fb1"];
-  }
-
-  gradcam [label="Grad-CAM\\nheatmap sull'immagine", shape=note, fillcolor="#fff59d"];
-
-  img -> backbone -> fmap -> gap -> fusion;
-  eta -> zs -> cat9;
-  sesso -> embsex -> cat9;
-  sede -> embsite -> cat9;
-  cat9 -> fc1 -> fc2 -> fusion;
-  fusion -> h1 -> h2 -> h3 -> sm;
-
-  fmap -> gradcam [style=dashed, label=" attivazioni", fontcolor="#e6e6e6", fontsize=9];
-  h3 -> gradcam [style=dashed, label=" gradienti", fontcolor="#e6e6e6", fontsize=9, constraint=false];
-}
-"""
 
 st.title("Classificatore multimodale di lesioni cutanee")
 st.info(
@@ -407,11 +353,11 @@ with info1.expander("Informazioni sul progetto"):
 with info2.expander("Le lesioni che il modello riconosce"):
     st.markdown(INFO_LESIONI)
 
-with st.expander("🧠 Architettura del modello e flusso del lavoro"):
+with st.expander("Architettura del modello e flusso del lavoro"):
     st.markdown("#### Struttura del modello")
     st.markdown(
         "Il modello elabora in parallelo l'immagine e i dati clinici con due rami separati. "
         "Le due rappresentazioni vengono poi unite e passate a una rete che produce le probabilità "
         "delle 8 classi. Accanto a ogni passaggio è indicato quanti valori lo attraversano."
     )
-    st.graphviz_chart(SCHEMA_MODELLO)
+    st.image("schema_modello.png")
