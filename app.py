@@ -316,6 +316,29 @@ dermatofibroma e lesione vascolare, 35 per il carcinoma squamocellulare): per qu
 immagine vale circa 3-4 punti percentuali, quindi le percentuali vanno lette con cautela.
 """
 
+COMMENTO_METRICHE = """
+**Come si legge.** Per ogni lesione, la **precision** indica quanto è affidabile il modello quando
+dà quella risposta (*"quando dice melanoma, quante volte ha ragione?"*), la **recall** quante lesioni
+di quel tipo riesce a trovare (*"dei melanomi reali, quanti ne riconosce?"*). L'**F1** combina le due.
+La linea arancione è l'F1 macro, la media degli 8 F1: dà lo stesso peso a ogni classe, per quanto rara.
+
+**Cosa emerge**
+- **La difficoltà non dipende solo dalla rarità.** Lesione vascolare e dermatofibroma hanno solo
+  25 immagini ciascuna, eppure superano il melanoma (202) e la cheratosi benigna (199). Contano di più
+  le caratteristiche visive: alcune lesioni sono molto distintive, altre si somigliano tra loro.
+- **Per il melanoma la recall (0,71) è più alta della precision (0,63).** Il modello tende a
+  "sospettare" il melanoma anche in lesioni benigne: il 5% dei nevi viene classificato come melanoma
+  e, dato che i nevi sono moltissimi (1.127), queste poche percentuali diventano decine di falsi
+  allarmi. Per uno strumento di supporto allo screening questo squilibrio è preferibile al contrario:
+  un falso allarme porta a un controllo in più, un melanoma mancato è molto più grave.
+- **Il carcinoma basocellulare ha una recall molto alta (0,91)**: quasi tutti i casi vengono trovati,
+  al prezzo di qualche lesione di altro tipo classificata come basocellulare (precision 0,76).
+- **Cheratosi attinica e carcinoma squamocellulare restano le classi più difficili** (F1 0,42 e 0,56),
+  con una recall bassa: il modello ne riconosce meno della metà, confondendole tra loro e con la
+  cheratosi benigna, come mostra la confusion matrix.
+"""
+
+
 st.title("Classificatore multimodale di lesioni cutanee")
 st.info(
     "Carica un'immagine dermoscopica di una lesione della pelle e, se li conosci, inserisci età, "
@@ -325,6 +348,7 @@ st.info(
     "non rappresenta un dispositivo medico. I risultati non costituiscono una diagnosi. Per qualsiasi dubbio rivolgersi sempre "
     "a un dermatologo."
 )
+
 
 
 opzioni_sesso = [s for s in sex_to_idx if s != '__unseen__']
@@ -384,3 +408,6 @@ with st.expander("Risultati"):
     st.markdown("#### Confusion matrix sul test set")
     st.image("cm_test.png")
     st.markdown(COMMENTO_CM)
+    st.markdown("#### Metriche per classe")
+    st.image("metriche_classi.png")
+    st.markdown(COMMENTO_METRICHE)
