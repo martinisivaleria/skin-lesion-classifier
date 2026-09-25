@@ -296,7 +296,25 @@ Serve a capire se il modello si è concentrato sulla lesione o su dettagli irril
 (peli, bordi della foto, riflessi). Non indica dove si trova un eventuale tumore:
 mostra solo il ragionamento del modello.
 """
+COMMENTO_CM = """
+**Cosa emerge**
+- **Le lesioni più comuni o più caratteristiche sono riconosciute bene**: nevo melanocitico (93%),
+  carcinoma basocellulare (91%) e dermatofibroma (80%).
+- **Il melanoma è riconosciuto nel 71% dei casi**, ma nel 20% viene scambiato per un nevo.
+  È l'errore più rilevante dal punto di vista clinico, in quanto una lesione maligna viene interpretata come
+  benigna. L'errore opposto è più contenuto: solo il 5% dei nevi viene classificato come melanoma.
+- **Le lesioni cheratinocitiche sono le più difficili.** La cheratosi attinica è riconosciuta solo
+  nel 36% dei casi e viene confusa soprattutto con la cheratosi benigna (20%) e con il carcinoma
+  squamocellulare (20%). Il carcinoma squamocellulare (51%) viene a sua volta confuso con la
+  cheratosi attinica (14%). Sono lesioni visivamente molto simili, e la cheratosi attinica può
+  evolvere proprio in carcinoma squamocellulare: la confusione riflette una vicinanza reale.
+- **Diverse lesioni rare vengono attratte verso il nevo** (dermatofibroma 16%, lesione vascolare 12%),
+  la classe più numerosa del dataset.
 
+**Nota sui numeri.** Alcune classi hanno pochissime immagini nel test set (25 per cheratosi attinica,
+dermatofibroma e lesione vascolare, 35 per il carcinoma squamocellulare): per queste una singola
+immagine vale circa 3-4 punti percentuali, quindi le percentuali vanno lette con cautela.
+"""
 
 st.title("Classificatore multimodale di lesioni cutanee")
 st.info(
@@ -361,3 +379,8 @@ with st.expander("Architettura del modello e flusso del lavoro"):
         "delle 8 classi. Accanto a ogni passaggio è indicato quanti valori lo attraversano."
     )
     st.image("schema_modello.png")
+    
+with st.expander("Risultati"):
+    st.markdown("#### Confusion matrix sul test set")
+    st.image("cm_test.png")
+    st.markdown(COMMENTO_CM)
