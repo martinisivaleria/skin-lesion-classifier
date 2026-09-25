@@ -451,4 +451,5 @@ with st.expander("Bibliografia"):
 st.divider()
 st.caption(
     "Autrice: **Valeria Martinisi** · Project work realizzato per il master: 2025-2026 - Machine Learning e Big Data nella medicina di precisione e la Ricerca Biomedica, Università degli Studi di Padova· "
+    "[LinkedIn](https://www.linkedin.com/in/valeria-martinisi-7349b4203/)"
 )
