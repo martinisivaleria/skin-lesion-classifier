@@ -338,6 +338,34 @@ La linea arancione è l'F1 macro, la media degli 8 F1: dà lo stesso peso a ogni
   cheratosi benigna, come mostra la confusion matrix.
 """
 
+TABELLA_RISULTATI = """
+| Metrica | Validation | Test |
+|---|:---:|:---:|
+| Accuratezza | 85,7% | 85,6% |
+| F1 macro | 0,724 | 0,720 |
+| AUC macro | – | 0,967 |
+"""
+
+BIBLIOGRAFIA = """
+**Dataset**
+- Tschandl P., Rosendahl C., Kittler H. (2018). *The HAM10000 dataset, a large collection of multi-source
+  dermatoscopic images of common pigmented skin lesions.* Scientific Data, 5, 180161.
+- ISIC Archive – International Skin Imaging Collaboration, https://www.isic-archive.com
+
+**Studi di riferimento sulla classificazione multimodale**
+- Aksoy S., Demircioglu P., Bogrekci I. (2025). *Web-Based Multimodal Deep Learning Platform with XRAI
+  Explainability for Real-Time Skin Lesion Classification and Clinical Decision Support.* Cosmetics, 12, 194.
+- Das A., Agarwal V., Shetty N. P. (2025). *Comparative analysis of multimodal architectures for effective
+  skin lesion detection using clinical and image data.* Frontiers in Artificial Intelligence, 8, 1608837.
+- Tran-Van N.-Y., Le K.-H. (2025). *A multimodal skin lesion classification through cross-attention fusion
+  and collaborative edge computing.* Computerized Medical Imaging and Graphics, 124, 102588.
+- Suresh P., Keerthika P., Nitesh Kumar A. R. (2026). *Text guided cross attentive multimodal learning with
+  visual feature modulation for automated skin lesion detection.* Scientific Reports.
+- Atiq M. E., Fattah S. A. (2025). *Towards Explainable Skin Cancer Classification: A Dual-Network Attention
+  Model with Lesion Segmentation and Clinical Metadata Fusion.* arXiv:2510.17773.
+- Adebiyi A. et al. (2024). *Accurate Skin Lesion Classification Using Multimodal Learning on the
+  HAM10000 Dataset.* medRxiv, doi:10.1101/2024.05.30.24308213.
+  """
 
 st.title("Classificatore multimodale di lesioni cutanee")
 st.info(
@@ -411,3 +439,16 @@ with st.expander("Risultati"):
     st.markdown("#### Metriche per classe")
     st.image("metriche_classi.png")
     st.markdown(COMMENTO_METRICHE)
+    st.markdown("#### Riepilogo")
+    st.markdown(TABELLA_RISULTATI)
+    st.caption("Il test set è stato usato una sola volta, al termine dello sviluppo. I valori quasi identici "
+               "a quelli di validation indicano che il modello generalizza bene su lesioni mai viste. "
+               "L'AUC è stata calcolata solo sul test set.")
+
+with st.expander("Bibliografia"):
+    st.markdown(BIBLIOGRAFIA)
+
+st.divider()
+st.caption(
+    "Autrice: **Valeria Martinisi** · Project work realizzato per il master: 2025-2026 - Machine Learning e Big Data nella medicina di precisione e la Ricerca Biomedica, Università degli Studi di Padova· "
+)
