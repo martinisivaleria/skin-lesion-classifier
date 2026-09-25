@@ -417,10 +417,11 @@ with col_output:
         for nome, p in sorted(probabilita.items(), key=lambda x: -x[1]):
             st.progress(p, text=f"{NOMI_DIAGNOSI.get(nome, nome)}: {p:.1%}")
 
-info1, info2 = st.columns(2)
-with info1.expander("Informazioni sul progetto"):
+
+with st.expander("Informazioni sul progetto"):
     st.markdown(INFO_PROGETTO)
-with info2.expander("Le lesioni che il modello riconosce"):
+    
+with st.expander("Le lesioni che il modello riconosce"):
     st.markdown(INFO_LESIONI)
 
 with st.expander("Architettura del modello e flusso del lavoro"):
