@@ -265,9 +265,9 @@ la classificazione rispetto all'uso della sola immagine.
 
 #### 🔍 Trasparenza
 - **Grad-CAM** mostra le zone dell'immagine che hanno influenzato maggiormente la predizione.
-- Per rendere l'applicazione più efficiente è stato implementato un **filtro di coerenza** basato sulla distanza di Mahalanobis nello spazio delle feature che
-  rifiuta le immagini troppo diverse da quelle di training. Sul test set accetta il 93,8%
-  delle dermoscopie reali; resta però un filtro di base, che non intercetta tutte le immagini estranee.
+- Per rendere l'applicazione più efficiente è stato implementato un **filtro di coerenza** basato sulla distanza di Mahalanobis nello spazio delle feature. Qualora
+  l'utente dovesse caricare un'immagine troppo distante dal set di training, alla classificazione verrebbe affiancato un messaggio di warning. 
+  Sul test set accetta il 93,8% delle dermoscopie reali.
 """
 
 
