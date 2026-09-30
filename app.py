@@ -290,11 +290,10 @@ INFO_GRADCAM = """
 **Grad-CAM** è una tecnica che mostra *dove ha guardato* il modello per prendere la sua decisione.
 
 I colori sovrapposti all'immagine indicano quanto ogni zona ha influito sulla predizione:
-**rosso** molto, **giallo e verde** in modo moderato, **blu** poco o nulla.
+**rosso** - molto, **giallo e verde** - in modo moderato, **blu** - poco o nulla.
 
 Serve a capire se il modello si è concentrato sulla lesione o su dettagli irrilevanti
-(peli, bordi della foto, riflessi). Non indica dove si trova un eventuale tumore:
-mostra solo il ragionamento del modello.
+(peli, bordi della foto, riflessi). 
 """
 COMMENTO_CM = """
 **Cosa emerge**
