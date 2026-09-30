@@ -1,9 +1,10 @@
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch
-torchvision
+torch==2.6.0
+torchvision==0.21.0
 streamlit
 huggingface_hub
 opencv-python-headless
 matplotlib
 numpy
 pillow
+pillow-heif
