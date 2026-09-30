@@ -397,11 +397,11 @@ with col_output:
         image_t = eval_transform(immagine).unsqueeze(0)
 
         if distanza_ood(image_t) > soglia_ood:
-            st.error(
-                "L'immagine caricata non sembra un'immagine dermoscopica, non è possibile procedere con la classificazione. "
-                "Il modello è stato addestrato solo su immagini dermoscopiche di lesioni cutanee."
+            st.warning(
+                "L'immagine caricata è lontana dalle immagini "
+                "dermoscopiche su cui il modello è stato addestrato: la classificazione viene comunque "
+                "mostrata, ma potrebbe essere poco affidabile."
             )
-            st.stop()
 
         with st.spinner("Analisi in corso..."):
             classe, probabilita, overlay = predict(immagine, eta, sesso, sede)
