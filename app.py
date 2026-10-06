@@ -11,6 +11,9 @@ from matplotlib import cm
 import streamlit as st
 from huggingface_hub import hf_hub_download
 
+import base64
+import io
+
 st.set_page_config(page_title="Skin Lesion Classifier", layout="wide")
 
 
@@ -200,6 +203,125 @@ def predict(pil_image, age, sex, site):
     return class_names[pred_class], probabilita, overlay
 
 
+# ---------- Componente di caricamento robusto per smartphone ----------
+
+caricatore = st.components.v2.component(
+    "caricatore_immagine",
+    html="""
+    <div class="caricatore">
+      <button id="scegli" type="button">Scegli un'immagine</button>
+      <input id="file" type="file" accept="image/*" hidden />
+      <div id="stato">Nessuna immagine selezionata</div>
+    </div>
+    """,
+    css="""
+    .caricatore { font-family: var(--st-font); color: var(--st-text-color); }
+    #scegli {
+      background: var(--st-primary-color); color: white; border: none;
+      border-radius: 0.5rem; padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer;
+    }
+    #stato { margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8; }
+    """,
+    js="""
+    export default function ({ parentElement, data, setStateValue }) {
+      const CHIAVE = "lesione_in_attesa";
+      const input = parentElement.querySelector("#file");
+      const bottone = parentElement.querySelector("#scegli");
+      const stato = parentElement.querySelector("#stato");
+      const ack = data?.ack ?? null;
+
+      const leggiAttesa = () => {
+        try { return JSON.parse(sessionStorage.getItem(CHIAVE)) || parentElement._attesa || null; }
+        catch (e) { return parentElement._attesa || null; }
+      };
+
+      let tentativi = 0;
+      const invia = () => {
+        const p = leggiAttesa();
+        if (!p || p.id === ack || tentativi >= 10) return;
+        tentativi += 1;
+        stato.textContent = "Invio dell'immagine in corso…";
+        setStateValue("image", { ...p, tentativo: tentativi });
+      };
+
+      const p = leggiAttesa();
+      if (p && p.id === ack) {
+        stato.textContent = "Immagine caricata: " + p.name;
+      } else if (p) {
+        invia();
+      }
+
+      function leggiERidimensiona(file, maxLato) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+              const scala = Math.min(1, maxLato / Math.max(img.width, img.height));
+              const c = document.createElement("canvas");
+              c.width = Math.round(img.width * scala);
+              c.height = Math.round(img.height * scala);
+              c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+              resolve(c.toDataURL("image/jpeg", 0.92));
+            };
+            img.onerror = () => reject(new Error("formato non leggibile"));
+            img.src = reader.result;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      bottone.onclick = () => input.click();
+      input.onchange = async () => {
+        const f = input.files && input.files[0];
+        if (!f) return;
+        stato.textContent = "Preparazione dell'immagine…";
+        try {
+          const url = await leggiERidimensiona(f, 800);
+          const nuova = { id: String(Date.now()), name: f.name, data: url };
+          parentElement._attesa = nuova;
+          try { sessionStorage.setItem(CHIAVE, JSON.stringify(nuova)); } catch (e) {}
+          tentativi = 0;
+          invia();
+        } catch (e) {
+          stato.textContent = "Impossibile leggere il file: usa un'immagine JPG o PNG.";
+        }
+        input.value = "";
+      };
+
+      const quandoVisibile = () => {
+        if (document.visibilityState === "visible") setTimeout(invia, 1500);
+      };
+      document.addEventListener("visibilitychange", quandoVisibile);
+      const timer = setInterval(invia, 3000);
+
+      return () => {
+        document.removeEventListener("visibilitychange", quandoVisibile);
+        clearInterval(timer);
+      };
+    }
+    """,
+)
+
+
+def carica_immagine():
+    """Mostra il componente e restituisce l'immagine PIL ricevuta (o None)."""
+    risultato = caricatore(
+        key="caricatore",
+        data={"ack": st.session_state.get("img_id")},
+        default={"image": None},
+        on_image_change=lambda: None,
+    )
+    valore = risultato.image
+    if valore and valore.get("id") != st.session_state.get("img_id"):
+        st.session_state["img_id"] = valore["id"]
+        st.session_state["img_bytes"] = base64.b64decode(valore["data"].split(",", 1)[1])
+        st.rerun()   # rilancio così il componente riceve la conferma (ack)
+    if "img_bytes" in st.session_state:
+        return Image.open(io.BytesIO(st.session_state["img_bytes"])).convert("RGB")
+    return None
+    
 ## ---------- Interfaccia ----------
 
 # ---------- Dizionari -----------
@@ -384,15 +506,16 @@ opzioni_sede = [s for s in site_to_idx if s != '__unseen__']
 col_input, col_output = st.columns(2)
 
 with col_input:
-    foto = st.file_uploader("Carica un'immagine dermoscopica", type=['jpg', 'jpeg', 'png'])
+    st.markdown("**Carica un'immagine**")
+    immagine_caricata = carica_immagine()
     eta = st.number_input("Età (lascia vuoto se non nota)", min_value=0, max_value=100, value=None, step=5)
     sesso = st.selectbox("Sesso", opzioni_sesso, format_func=lambda v: NOMI_SESSO.get(v, v))
     sede = st.selectbox("Sede anatomica", opzioni_sede, index=opzioni_sede.index('NaN'), format_func=lambda v: NOMI_SEDE.get(v, v))
-    avvia = st.button("Analizza", disabled=foto is None)
+    avvia = st.button("Analizza", disabled=immagine_caricata is None)
 
 with col_output:
     if avvia:
-        immagine = Image.open(foto).convert('RGB')
+        immagine = immagine_caricata
         if distanza_ood(image_t) > soglia_ood:
             st.warning(
                 "L'immagine caricata è lontana dalle immagini "
