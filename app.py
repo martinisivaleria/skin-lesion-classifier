@@ -225,80 +225,91 @@ caricatore = st.components.v2.component(
     js="""
     export default function ({ parentElement, data, setStateValue }) {
       const CHIAVE = "lesione_in_attesa";
-      const input = parentElement.querySelector("#file");
-      const bottone = parentElement.querySelector("#scegli");
-      const stato = parentElement.querySelector("#stato");
-      const ack = data?.ack ?? null;
+      const el = parentElement;
+      el._ack = data?.ack ?? null;          // conferma sempre aggiornata
+      el._set = setStateValue;              // funzione di invio sempre aggiornata
+      const stato = el.querySelector("#stato");
 
       const leggiAttesa = () => {
-        try { return JSON.parse(sessionStorage.getItem(CHIAVE)) || parentElement._attesa || null; }
-        catch (e) { return parentElement._attesa || null; }
+        try { return JSON.parse(sessionStorage.getItem(CHIAVE)) || el._attesa || null; }
+        catch (e) { return el._attesa || null; }
       };
 
-      let tentativi = 0;
-      const invia = () => {
+      el._invia = () => {
         const p = leggiAttesa();
-        if (!p || p.id === ack || tentativi >= 10) return;
-        tentativi += 1;
+        if (!p || p.id === el._ack) return;               // già ricevuta: non reinvio
+        el._tentativi = el._tentativi || {};
+        const n = (el._tentativi[p.id] || 0) + 1;
+        if (n > 5) {
+          stato.textContent = "Invio non riuscito: ricarica la pagina e riprova.";
+          return;
+        }
+        el._tentativi[p.id] = n;
         stato.textContent = "Invio dell'immagine in corso…";
-        setStateValue("image", { ...p, tentativo: tentativi });
+        el._set("image", { ...p, tentativo: n });
       };
 
       const p = leggiAttesa();
-      if (p && p.id === ack) {
+      if (p && p.id === el._ack) {
         stato.textContent = "Immagine caricata: " + p.name;
-      } else if (p) {
-        invia();
       }
 
-      function leggiERidimensiona(file, maxLato) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const img = new Image();
-            img.onload = () => {
-              const scala = Math.min(1, maxLato / Math.max(img.width, img.height));
-              const c = document.createElement("canvas");
-              c.width = Math.round(img.width * scala);
-              c.height = Math.round(img.height * scala);
-              c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-              resolve(c.toDataURL("image/jpeg", 0.92));
+      if (!el._init) {                                   // pulsanti e timer: una volta sola
+        el._init = true;
+        const input = el.querySelector("#file");
+        const bottone = el.querySelector("#scegli");
+
+        function leggiERidimensiona(file, maxLato) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const img = new Image();
+              img.onload = () => {
+                const scala = Math.min(1, maxLato / Math.max(img.width, img.height));
+                const c = document.createElement("canvas");
+                c.width = Math.round(img.width * scala);
+                c.height = Math.round(img.height * scala);
+                c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+                resolve(c.toDataURL("image/jpeg", 0.92));
+              };
+              img.onerror = () => reject(new Error("formato non leggibile"));
+              img.src = reader.result;
             };
-            img.onerror = () => reject(new Error("formato non leggibile"));
-            img.src = reader.result;
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        }
+
+        bottone.onclick = () => input.click();
+        input.onchange = async () => {
+          const f = input.files && input.files[0];
+          if (!f) return;
+          stato.textContent = "Preparazione dell'immagine…";
+          try {
+            const url = await leggiERidimensiona(f, 800);
+            const nuova = { id: String(Date.now()), name: f.name, data: url };
+            el._attesa = nuova;
+            try { sessionStorage.setItem(CHIAVE, JSON.stringify(nuova)); } catch (e) {}
+            el._invia();
+          } catch (e) {
+            stato.textContent = "Impossibile leggere il file: usa un'immagine JPG o PNG.";
+          }
+          input.value = "";
+        };
+
+        el._visibile = () => {
+          if (document.visibilityState === "visible") setTimeout(() => el._invia(), 1500);
+        };
+        document.addEventListener("visibilitychange", el._visibile);
+        el._timer = setInterval(() => el._invia(), 4000);
+
+        if (p && p.id !== el._ack) el._invia();       // immagine rimasta in sospeso
       }
 
-      bottone.onclick = () => input.click();
-      input.onchange = async () => {
-        const f = input.files && input.files[0];
-        if (!f) return;
-        stato.textContent = "Preparazione dell'immagine…";
-        try {
-          const url = await leggiERidimensiona(f, 800);
-          const nuova = { id: String(Date.now()), name: f.name, data: url };
-          parentElement._attesa = nuova;
-          try { sessionStorage.setItem(CHIAVE, JSON.stringify(nuova)); } catch (e) {}
-          tentativi = 0;
-          invia();
-        } catch (e) {
-          stato.textContent = "Impossibile leggere il file: usa un'immagine JPG o PNG.";
-        }
-        input.value = "";
-      };
-
-      const quandoVisibile = () => {
-        if (document.visibilityState === "visible") setTimeout(invia, 1500);
-      };
-      document.addEventListener("visibilitychange", quandoVisibile);
-      const timer = setInterval(invia, 3000);
-
-      return () => {
-        document.removeEventListener("visibilitychange", quandoVisibile);
-        clearInterval(timer);
+      return () => {                                     // pulizia quando il componente sparisce
+        document.removeEventListener("visibilitychange", el._visibile);
+        clearInterval(el._timer);
+        el._init = false;
       };
     }
     """,
