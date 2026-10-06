@@ -472,7 +472,8 @@ LESIONI = [
 
 STILE_SCHEDE = """
 <style>
-.schede { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.schede { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 640px) { .schede { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .scheda-lesione { background: #262730; border-radius: 12px; padding: 10px; }
 .scheda-lesione img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; display: block; }
 .scheda-lesione .nome { font-weight: 700; font-size: .95rem; margin-top: 8px; }
@@ -573,28 +574,30 @@ BIBLIOGRAFIA = """
 
 STILE_INTESTAZIONE = """
 <style>
-.intestazione {
-  border-radius: 16px; overflow: hidden; margin-bottom: 1.2rem; padding: 2rem 2rem 1.6rem;
-  background-image: linear-gradient(rgba(14,17,23,.55), rgba(14,17,23,.55)), url("data:image/jpeg;base64,__MOSAICO__");
+.intestazione { border-radius: 16px; overflow: hidden; margin-bottom: 1.2rem; background: #1a1d24; }
+.intestazione .banda {
+  height: 230px; display: flex; align-items: flex-end; padding: 1.3rem 2rem;
+  background-image: linear-gradient(to bottom, rgba(14,17,23,0) 35%, rgba(26,29,36,.95) 100%),
+                    url("data:image/jpeg;base64,__MOSAICO__");
   background-size: cover; background-position: center;
 }
-.intestazione h1 {
-  color: #FAFAFA; font-size: 2.1rem; margin: 0 0 1rem 0; padding: 0;
-  text-shadow: 0 2px 8px rgba(0,0,0,.6);
-}
-.intestazione .info {
-  background: rgba(14,17,23,.72); border: 1px solid rgba(144,202,249,.35);
-  border-radius: 12px; padding: 1rem 1.1rem; color: #FAFAFA; line-height: 1.5;
-}
+.intestazione h1 { color: #FAFAFA; font-size: 2.1rem; margin: 0; padding: 0; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
+.intestazione .info { padding: 1.1rem 2rem 1.3rem; line-height: 1.5; color: #FAFAFA;
+  border-top: 1px solid rgba(144,202,249,.25); }
 .intestazione .info p { margin: 0 0 .6rem 0; }
 .intestazione .info p:last-child { margin: 0; }
 .intestazione .att { color: #ffcc80; font-weight: 700; }
+@media (max-width: 640px) {
+  .intestazione .banda { height: 150px; padding: 1rem; }
+  .intestazione h1 { font-size: 1.5rem; }
+  .intestazione .info { padding: 1rem; }
+}
 </style>
 """
 
 HTML_INTESTAZIONE = """
 <div class="intestazione">
-  <h1>Classificazione multimodale di lesioni cutanee</h1>
+  <div class="banda"><h1>Classificazione multimodale di lesioni cutanee</h1></div>
   <div class="info">
     <p>Carica un'immagine dermoscopica di una lesione della pelle e, se li conosci, inserisci età, sesso e
     sede della lesione. Premendo <b>Analizza</b>, il modello stima a quale di 8 tipi di lesione appartiene e
