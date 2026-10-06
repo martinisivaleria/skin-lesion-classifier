@@ -500,7 +500,7 @@ immagine vale circa 3-4 punti percentuali, quindi le percentuali vanno lette con
 """
 
 COMMENTO_CONTRIBUTO_CLINICI = """
-**Come si legge.** Lo stesso modello finale è stato valutato due volte sulle stesse immagini: una con i dati
+Lo stesso modello finale è stato valutato due volte sulle stesse immagini: una con i dati
 clinici reali e una con età, sesso e sede impostati come "non specificato". La differenza mostra quanto il
 modello si appoggia davvero alle informazioni cliniche.
 
@@ -611,7 +611,7 @@ with st.expander("Risultati"):
     st.markdown("#### Confusion matrix sul test set")
     st.image("cm_test.png")
     st.markdown(COMMENTO_CM)
-    st.markdown("#### Metriche per classe")
+    st.markdown("#### Contributo dei dati clinici")
     st.image("contributo_dati_clinici.png")
     st.markdown(COMMENTO_CONTRIBUTO_CLINICI)
     st.markdown("#### Riepilogo")
