@@ -501,7 +501,7 @@ BIBLIOGRAFIA = """
 
 st.title("Classificatore multimodale di lesioni cutanee")
 st.info(
-    "Carica un'immagine dermoscopica di una lesione della pelle e, se li conosci, inserisci età, "
+    "Carica l'immagine di una lesione della pelle e, se li conosci, inserisci età, "
     "sesso e sede della lesione. Premendo **Analizza**, il modello stima a quale tipo di lesione "
     "appartiene.\n\n"
     "⚠️ **Attenzione:** si tratta di un prototipo sviluppato a scopo di ricerca, "
@@ -527,6 +527,7 @@ with col_input:
 with col_output:
     if avvia:
         immagine = immagine_caricata
+        image_t = eval_transform(immagine).unsqueeze(0)
         if distanza_ood(image_t) > soglia_ood:
             st.warning(
                 "L'immagine caricata è lontana dalle immagini "
