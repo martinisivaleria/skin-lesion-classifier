@@ -500,17 +500,17 @@ immagine vale circa 3-4 punti percentuali, quindi le percentuali vanno lette con
 """
 
 COMMENTO_CONTRIBUTO_CLINICI = """
-**Verifica sui dati clinici.** Per verificare che il modello usi davvero i dati clinici è stata condotta un'analisi di ablazione: il modello 
-finale è stato rivalutato due volte sugli stessi dati, una con i dati clinici veri e una con età, sesso e sede impostati come dato mancante, 
-sia sul validation sia sul test set. 
-- In entrambi i casi, senza dati clinici, F1 macro, accuratezza e AUC peggiorano: l'F1 macro perde 3,7 punti in 
-validation e 1,7 nel test. Il contributo è quindi coerente nella direzione ma di entità moderata. 
-- Classe per classe i guadagni sono stabili 
-per dermatofibroma, carcinoma squamocellulare, lesione vascolare e melanoma; per la cheratosi attinica invece il segno cambia tra validation 
-e test, perché con 21-25 immagini una o due predizioni spostano il risultato di diversi punti. In circa il 69% delle immagini i dati clinici 
-aumentano la probabilità della classe corretta, e il dato è identico nei due insiemi. L'analisi misura quanto il modello finale si appoggia 
-ai dati clinici, non quanto renderebbe un modello allenato senza di essi.
+**Come si legge.** Lo stesso modello finale è stato valutato due volte sulle stesse immagini: una con i dati
+clinici reali e una con età, sesso e sede impostati come "non specificato". La differenza mostra quanto il
+modello si appoggia davvero alle informazioni cliniche.
 
+**Cosa emerge**
+- **Senza dati clinici l'F1 macro scende** in entrambi gli insiemi: −3,7 punti in validation e −1,7 nel test.
+  Il contributo è coerente, anche se di entità moderata.
+- **Nel 69% circa delle immagini** i dati clinici aumentano la probabilità assegnata alla diagnosi corretta.
+- **Il guadagno è stabile** per dermatofibroma, carcinoma squamocellulare, lesione vascolare, melanoma e
+  carcinoma basocellulare. Per la cheratosi attinica il risultato cambia segno tra validation e test: con
+  21–25 immagini, una o due predizioni spostano l'F1 di molti punti.
 """
 
 TABELLA_RISULTATI = """
@@ -612,7 +612,7 @@ with st.expander("Risultati"):
     st.image("cm_test.png")
     st.markdown(COMMENTO_CM)
     st.markdown("#### Metriche per classe")
-    st.image("contributi_clinici.png")
+    st.image("contributo_dati_clinici.png")
     st.markdown(COMMENTO_CONTRIBUTO_CLINICI)
     st.markdown("#### Riepilogo")
     st.markdown(TABELLA_RISULTATI)
