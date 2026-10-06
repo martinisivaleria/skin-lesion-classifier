@@ -388,7 +388,11 @@ def carica_immagine():
     return None
     
 ## ---------- Interfaccia ----------
-
+# --------------Le immagini vengono inserite direttamente nella pagina in formato testo (base64)-----------------------------
+def immagine_base64(percorso):
+    with open(percorso, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+        
 # ---------- Dizionari -----------
 
 NOMI_DIAGNOSI = {
@@ -455,20 +459,45 @@ la classificazione rispetto all'uso della sola immagine.
 """
 
 
-INFO_LESIONI = """
-| Lesione | Natura | In breve |
-|---|---|---|
-| Nevo melanocitico (neo) | Benigna | Il comune neo: un accumulo di cellule che producono pigmento. |
-| Cheratosi benigna | Benigna | Macchie o rilievi della pelle frequenti con l'età. |
-| Dermatofibroma | Benigna | Piccolo nodulo duro della pelle. |
-| Lesione vascolare | Benigna | Lesioni formate da piccoli vasi sanguigni. |
-| Cheratosi attinica | Precancerosa | Dovuta all'esposizione al sole; se non trattata può evolvere in carcinoma squamocellulare. |
-| Carcinoma basocellulare | Maligna | Il tumore della pelle più frequente; cresce lentamente e raramente si diffonde, ma va trattato. |
-| Carcinoma squamocellulare | Maligna | Tumore della pelle che in alcuni casi può diffondersi ad altri organi. |
-| Melanoma | Maligna | Il più aggressivo tra questi tumori; una diagnosi precoce è fondamentale. |
+LESIONI = [
+    ("nevo.jpg", "Nevo melanocitico (neo)", "Benigna", "ben", "Il comune neo: un accumulo di cellule che producono pigmento."),
+    ("cheratosi_benigna.jpg", "Cheratosi benigna", "Benigna", "ben", "Macchie o rilievi della pelle frequenti con l'età, innocui."),
+    ("dermatofibroma.jpg", "Dermatofibroma", "Benigna", "ben", "Piccolo nodulo duro della pelle, spesso sulle gambe."),
+    ("lesione_vascolare.jpg", "Lesione vascolare", "Benigna", "ben", "Lesioni formate da piccoli vasi sanguigni, come gli angiomi."),
+    ("cheratosi_attinica.jpg", "Cheratosi attinica", "Precancerosa", "pre", "Dovuta all'esposizione al sole; se non trattata può evolvere in carcinoma squamocellulare."),
+    ("carcinoma_basocellulare.jpg", "Carcinoma basocellulare", "Maligna", "mal", "Il tumore della pelle più frequente; cresce lentamente e raramente si diffonde, ma va trattato."),
+    ("carcinoma_squamocellulare.jpg", "Carcinoma squamocellulare", "Maligna", "mal", "Tumore della pelle che in alcuni casi può diffondersi ad altri organi."),
+    ("melanoma.jpg", "Melanoma", "Maligna", "mal", "Il più aggressivo tra questi tumori; una diagnosi precoce è fondamentale."),
+]
 
-*Descrizioni generali a scopo informativo: non sostituiscono il parere di un medico.*
+STILE_SCHEDE = """
+<style>
+.schede { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.scheda-lesione { background: #262730; border-radius: 12px; padding: 10px; }
+.scheda-lesione img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; display: block; }
+.scheda-lesione .nome { font-weight: 700; font-size: .95rem; margin-top: 8px; }
+.scheda-lesione .nat { display: inline-block; margin-top: 6px; font-size: .72rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px; color: #fff; }
+.nat.ben { background: #2E9E5B; } .nat.pre { background: #E8A317; } .nat.mal { background: #D64545; }
+.scheda-lesione .desc { font-size: .85rem; opacity: .8; margin-top: 6px; line-height: 1.35; }
+.nota-lesioni { font-size: .8rem; opacity: .6; font-style: italic; margin-top: 10px; }
+</style>
 """
+
+def html_schede_lesioni():
+    schede = ""
+    for file, nome, natura, classe, descrizione in LESIONI:
+        img = immagine_base64(f"immagini/{file}")
+        schede += f"""
+        <div class="scheda-lesione">
+          <img src="data:image/jpeg;base64,{img}" alt="{nome}">
+          <div class="nome">{nome}</div>
+          <span class="nat {classe}">{natura}</span>
+          <div class="desc">{descrizione}</div>
+        </div>"""
+    return (STILE_SCHEDE + f'<div class="schede">{schede}</div>'
+            + '<div class="nota-lesioni">Descrizioni generali a scopo informativo: non sostituiscono il parere '
+              'di un medico. Immagini: HAM10000 (ISIC Archive).</div>')
 
 INFO_GRADCAM = """
 **Grad-CAM** è una tecnica che mostra *dove ha guardato* il modello per prendere la sua decisione.
@@ -542,15 +571,44 @@ BIBLIOGRAFIA = """
   HAM10000 Dataset.* medRxiv, doi:10.1101/2024.05.30.24308213.
   """
 
-st.title("Classificatore multimodale di lesioni cutanee")
-st.info(
-    "Carica l'immagine di una lesione della pelle e, se li conosci, inserisci età, "
-    "sesso e sede della lesione. Premendo **Analizza**, il modello stima a quale tipo di lesione "
-    "appartiene.\n\n"
-    "⚠️ **Attenzione:** si tratta di un prototipo sviluppato a scopo di ricerca, "
-    "non rappresenta un dispositivo medico. I risultati non costituiscono una diagnosi. Per qualsiasi dubbio rivolgersi sempre "
-    "a un dermatologo."
-)
+STILE_INTESTAZIONE = """
+<style>
+.intestazione {
+  border-radius: 16px; overflow: hidden; margin-bottom: 1.2rem; padding: 2rem 2rem 1.6rem;
+  background-image: linear-gradient(rgba(14,17,23,.55), rgba(14,17,23,.55)), url("data:image/jpeg;base64,__MOSAICO__");
+  background-size: cover; background-position: center;
+}
+.intestazione h1 {
+  color: #FAFAFA; font-size: 2.1rem; margin: 0 0 1rem 0; padding: 0;
+  text-shadow: 0 2px 8px rgba(0,0,0,.6);
+}
+.intestazione .info {
+  background: rgba(14,17,23,.72); border: 1px solid rgba(144,202,249,.35);
+  border-radius: 12px; padding: 1rem 1.1rem; color: #FAFAFA; line-height: 1.5;
+}
+.intestazione .info p { margin: 0 0 .6rem 0; }
+.intestazione .info p:last-child { margin: 0; }
+.intestazione .att { color: #ffcc80; font-weight: 700; }
+</style>
+"""
+
+HTML_INTESTAZIONE = """
+<div class="intestazione">
+  <h1>Classificazione multimodale di lesioni cutanee</h1>
+  <div class="info">
+    <p>Carica un'immagine dermoscopica di una lesione della pelle e, se li conosci, inserisci età, sesso e
+    sede della lesione. Premendo <b>Analizza</b>, il modello stima a quale di 8 tipi di lesione appartiene e
+    mostra, con una mappa colorata, le zone dell'immagine su cui si è basato.</p>
+    <p><span class="att">⚠️ Attenzione:</span> si tratta di un prototipo di ricerca sviluppato per un project
+    work universitario, non di un dispositivo medico. I risultati non costituiscono una diagnosi e possono
+    essere errati anche quando la probabilità indicata è alta. Per qualsiasi dubbio su una lesione rivolgersi
+    sempre a un dermatologo. Le immagini caricate non vengono salvate.</p>
+  </div>
+</div>
+"""
+
+st.markdown(STILE_INTESTAZIONE.replace("__MOSAICO__", immagine_base64("immagini/mosaico.jpg"))
+            + HTML_INTESTAZIONE, unsafe_allow_html=True)
 
 
 
@@ -596,7 +654,7 @@ with st.expander("Informazioni sul progetto"):
     st.markdown(INFO_PROGETTO)
     
 with st.expander("Le lesioni che il modello riconosce"):
-    st.markdown(INFO_LESIONI)
+    st.markdown(html_schede_lesioni(), unsafe_allow_html=True)
 
 with st.expander("Architettura del modello"):
     st.markdown("#### Struttura del modello")
