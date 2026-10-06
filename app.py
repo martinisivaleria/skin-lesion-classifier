@@ -598,7 +598,7 @@ with st.expander("Informazioni sul progetto"):
 with st.expander("Le lesioni che il modello riconosce"):
     st.markdown(INFO_LESIONI)
 
-with st.expander("Architettura del modello e flusso del lavoro"):
+with st.expander("Architettura del modello"):
     st.markdown("#### Struttura del modello")
     st.markdown(
         "Il modello elabora in parallelo l'immagine e i dati clinici con due rami separati. "
