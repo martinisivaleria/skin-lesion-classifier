@@ -428,11 +428,11 @@ la classificazione rispetto all'uso della sola immagine.
 - Per l'allenamento del modello sono state utilizzate **11.720 immagini dermoscopiche** della collezione pubblica HAM10000 (ISIC Archive),
   relative a **8 lesioni** distinte, complete di metadati clinici dei pazienti.
 - **Split raggruppato per lesione** (70% training, 15% validation, 15% test): nel dataset la stessa lesione compare spesso in più foto, in questo studio
-  tutte le foto della stessa lesione finiscono nello stesso insieme, ciò ha consentito di valutare il modello solo su
+  tutte le foto della stessa lesione finiscono nello stesso set, ciò ha consentito di valutare il modello solo su
   lesioni mai viste. Molti studi basati sullo stesso dataset dividono per singola immagine, con il rischio che
   la stessa lesione compaia sia in training sia in test (*data leakage*).
 - **Dati mancanti**: età imputata con la mediana del training; per sesso e sede è stata definita una categoria
-  esplicita "non specificato", distinta da quella riservata ai valori mai visti in training.
+  esplicita "non specificato".
 - **Classi fortemente sbilanciate**: i nevi sono circa due terzi delle immagini, mentre
   classi come dermatofibroma e lesioni vascolari ne hanno poche centinaia.
 
@@ -452,9 +452,6 @@ la classificazione rispetto all'uso della sola immagine.
 
 #### 🔍 Trasparenza
 - **Grad-CAM** mostra le zone dell'immagine che hanno influenzato maggiormente la predizione.
-- Per rendere l'applicazione più efficiente è stato implementato un **filtro di coerenza** basato sulla distanza di Mahalanobis nello spazio delle feature. Qualora
-  l'utente dovesse caricare un'immagine troppo distante dal set di training, alla classificazione verrebbe affiancato un messaggio di warning. 
-  Sul test set accetta il 93,8% delle dermoscopie reali.
 """
 
 
@@ -502,26 +499,18 @@ dermatofibroma e lesione vascolare, 35 per il carcinoma squamocellulare): per qu
 immagine vale circa 3-4 punti percentuali, quindi le percentuali vanno lette con cautela.
 """
 
-COMMENTO_METRICHE = """
-**Come si legge.** Per ogni lesione, la **precision** indica quanto è affidabile il modello quando
-dà quella risposta (*"quando dice melanoma, quante volte ha ragione?"*), la **recall** quante lesioni
-di quel tipo riesce a trovare (*"dei melanomi reali, quanti ne riconosce?"*). L'**F1** combina le due.
-La linea arancione è l'F1 macro, la media degli 8 F1: dà lo stesso peso a ogni classe, per quanto rara.
+COMMENTO_CONTRIBUTO_CLINICI = """
+**Verifica sui dati clinici.** Per verificare che il modello usi davvero i dati clinici è stata condotta un'analisi di ablazione: il modello 
+finale è stato rivalutato due volte sugli stessi dati, una con i dati clinici veri e una con età, sesso e sede impostati come dato mancante, 
+sia sul validation sia sul test set. 
+- In entrambi i casi, senza dati clinici, F1 macro, accuratezza e AUC peggiorano: l'F1 macro perde 3,7 punti in 
+validation e 1,7 nel test. Il contributo è quindi coerente nella direzione ma di entità moderata. 
+- Classe per classe i guadagni sono stabili 
+per dermatofibroma, carcinoma squamocellulare, lesione vascolare e melanoma; per la cheratosi attinica invece il segno cambia tra validation 
+e test, perché con 21-25 immagini una o due predizioni spostano il risultato di diversi punti. In circa il 69% delle immagini i dati clinici 
+aumentano la probabilità della classe corretta, e il dato è identico nei due insiemi. L'analisi misura quanto il modello finale si appoggia 
+ai dati clinici, non quanto renderebbe un modello allenato senza di essi.
 
-**Cosa emerge**
-- **La difficoltà non dipende solo dalla rarità.** Lesione vascolare e dermatofibroma hanno solo
-  25 immagini ciascuna, eppure superano il melanoma (202) e la cheratosi benigna (199). Contano di più
-  le caratteristiche visive: alcune lesioni sono molto distintive, altre si somigliano tra loro.
-- **Per il melanoma la recall (0,71) è più alta della precision (0,63).** Il modello tende a
-  "sospettare" il melanoma anche in lesioni benigne: il 5% dei nevi viene classificato come melanoma
-  e, dato che i nevi sono moltissimi (1.127), queste poche percentuali diventano decine di falsi
-  allarmi. Per uno strumento di supporto allo screening questo squilibrio è preferibile al contrario:
-  un falso allarme porta a un controllo in più, un melanoma mancato è molto più grave.
-- **Il carcinoma basocellulare ha una recall molto alta (0,91)**: quasi tutti i casi vengono trovati,
-  al prezzo di qualche lesione di altro tipo classificata come basocellulare (precision 0,76).
-- **Cheratosi attinica e carcinoma squamocellulare restano le classi più difficili** (F1 0,42 e 0,56),
-  con una recall bassa: il modello ne riconosce meno della metà, confondendole tra loro e con la
-  cheratosi benigna, come mostra la confusion matrix.
 """
 
 TABELLA_RISULTATI = """
