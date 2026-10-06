@@ -617,7 +617,7 @@ with st.expander("Risultati"):
     sx, centro, dx = st.columns([1, 4, 1])
     centro.image("contributo_dati_clinici.png")
     st.markdown(COMMENTO_CONTRIBUTO_CLINICI)
-    st.markdown("#### Riepilogo")
+    st.markdown("#### Prestazioni del modello")
     st.markdown(TABELLA_RISULTATI)
     st.caption("Il test set è stato usato una sola volta, al termine dello sviluppo. I valori quasi identici "
                "a quelli di validation indicano che il modello generalizza bene su lesioni mai viste. "
