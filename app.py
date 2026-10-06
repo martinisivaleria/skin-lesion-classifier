@@ -605,14 +605,17 @@ with st.expander("Architettura del modello e flusso del lavoro"):
         "Le due rappresentazioni vengono poi unite e passate a una rete che produce le probabilità "
         "delle 8 classi. Accanto a ogni passaggio è indicato quanti valori lo attraversano."
     )
-    st.image("schema_modello.png")
+    sx, centro, dx = st.columns([1, 4, 1])
+    centro.image("schema_modello.png")
     
 with st.expander("Risultati"):
     st.markdown("#### Confusion matrix sul test set")
-    st.image("cm_test.png")
+    sx, centro, dx = st.columns([1, 4, 1])
+    centro.image("cm_test.png")
     st.markdown(COMMENTO_CM)
     st.markdown("#### Contributo dei dati clinici")
-    st.image("contributo_dati_clinici.png")
+    sx, centro, dx = st.columns([1, 4, 1])
+    centro.image("contributo_dati_clinici.png")
     st.markdown(COMMENTO_CONTRIBUTO_CLINICI)
     st.markdown("#### Riepilogo")
     st.markdown(TABELLA_RISULTATI)
