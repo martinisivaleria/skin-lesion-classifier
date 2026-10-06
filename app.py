@@ -367,7 +367,6 @@ BIBLIOGRAFIA = """
   """
 
 st.title("Classificatore multimodale di lesioni cutanee")
-st.caption(f"Streamlit {st.__version__}")
 st.info(
     "Carica un'immagine dermoscopica di una lesione della pelle e, se li conosci, inserisci età, "
     "sesso e sede della lesione. Premendo **Analizza**, il modello stima a quale tipo di lesione "
@@ -385,10 +384,7 @@ opzioni_sede = [s for s in site_to_idx if s != '__unseen__']
 col_input, col_output = st.columns(2)
 
 with col_input:
-   # foto = st.file_uploader("Carica un'immagine dermoscopica", type=['jpg', 'jpeg', 'png'])
-    foto = st.file_uploader("Carica un'immagine dermoscopica")
-    if foto is not None:
-        st.caption(f"File ricevuto: {foto.name} · {foto.type} · {foto.size / 1e6:.1f} MB")
+    foto = st.file_uploader("Carica un'immagine dermoscopica", type=['jpg', 'jpeg', 'png'])
     eta = st.number_input("Età (lascia vuoto se non nota)", min_value=0, max_value=100, value=None, step=5)
     sesso = st.selectbox("Sesso", opzioni_sesso, format_func=lambda v: NOMI_SESSO.get(v, v))
     sede = st.selectbox("Sede anatomica", opzioni_sede, index=opzioni_sede.index('NaN'), format_func=lambda v: NOMI_SEDE.get(v, v))
@@ -396,14 +392,7 @@ with col_input:
 
 with col_output:
     if avvia:
-        #immagine = Image.open(foto).convert('RGB')
-        try:
-            immagine = Image.open(foto).convert('RGB')
-        except Exception:
-            st.error("Il file caricato non è un'immagine leggibile. Usa un file JPG o PNG.")
-            st.stop()
-        image_t = eval_transform(immagine).unsqueeze(0)
-
+        immagine = Image.open(foto).convert('RGB')
         if distanza_ood(image_t) > soglia_ood:
             st.warning(
                 "L'immagine caricata è lontana dalle immagini "
