@@ -208,27 +208,88 @@ def predict(pil_image, age, sex, site):
 caricatore = st.components.v2.component(
     "caricatore_immagine",
     html="""
-    <div class="caricatore">
-      <button id="scegli" type="button">Scegli un'immagine</button>
+    <div class="scheda" id="scheda">
+      <div class="vuoto" id="vuoto">
+        <svg class="icona" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 16.5v2A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5v-2"/>
+          <path d="M12 15V4"/><path d="M7.5 8.5 12 4l4.5 4.5"/>
+        </svg>
+        <div class="titolo">Carica un'immagine dermoscopica</div>
+        <div class="sottotitolo">JPG o PNG, dalla galleria o dai file</div>
+      </div>
+      <div class="pieno" id="pieno" hidden>
+        <img id="anteprima" alt="Anteprima dell'immagine caricata" />
+        <div class="info">
+          <div class="nome" id="nome"></div>
+          <span class="stato" id="stato"></span>
+        </div>
+      </div>
+      <button id="scegli" type="button">Scegli immagine</button>
       <input id="file" type="file" accept="image/*" hidden />
-      <div id="stato">Nessuna immagine selezionata</div>
     </div>
     """,
     css="""
-    .caricatore { font-family: var(--st-font); color: var(--st-text-color); }
-    #scegli {
-      background: var(--st-primary-color); color: white; border: none;
-      border-radius: 0.5rem; padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer;
+    .scheda {
+      font-family: var(--st-font);
+      color: var(--st-text-color);
+      border: 2px dashed color-mix(in srgb, var(--st-text-color) 25%, transparent);
+      border-radius: 14px;
+      padding: 1.4rem 1.2rem;
+      text-align: center;
+      background: var(--st-secondary-background-color, rgba(128,128,128,0.06));
+      transition: border-color .2s ease;
     }
-    #stato { margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8; }
+    .scheda:hover { border-color: var(--st-primary-color); }
+    .icona { width: 44px; height: 44px; color: var(--st-primary-color); margin-bottom: .4rem; }
+    .titolo { font-weight: 600; font-size: 1.05rem; }
+    .sottotitolo { font-size: .85rem; opacity: .7; margin-top: .2rem; }
+    .pieno { display: flex; align-items: center; gap: 1rem; text-align: left; }
+    .pieno[hidden], .vuoto[hidden] { display: none; }
+    #anteprima {
+      width: 84px; height: 84px; object-fit: cover; border-radius: 10px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.25);
+    }
+    .info { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+    .nome { font-weight: 600; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stato {
+      display: inline-block; width: fit-content; font-size: .8rem; font-weight: 600;
+      padding: .2rem .6rem; border-radius: 999px;
+    }
+    .stato.attesa { background: #E8A317; color: #fff; }
+    .stato.ok     { background: #2E9E5B; color: #fff; }
+    .stato.errore { background: #D64545; color: #fff; }
+    #scegli {
+      margin-top: 1rem;
+      background: var(--st-primary-color); color: #fff; border: none;
+      border-radius: 999px; padding: .6rem 1.4rem; font-size: .95rem; font-weight: 600;
+      cursor: pointer; transition: transform .1s ease, opacity .2s ease;
+    }
+    #scegli:hover { opacity: .9; }
+    #scegli:active { transform: scale(.97); }
     """,
     js="""
     export default function ({ parentElement, data, setStateValue }) {
       const CHIAVE = "lesione_in_attesa";
       const el = parentElement;
-      el._ack = data?.ack ?? null;          // conferma sempre aggiornata
-      el._set = setStateValue;              // funzione di invio sempre aggiornata
+      el._ack = data?.ack ?? null;
+      el._set = setStateValue;
+
+      const vuoto = el.querySelector("#vuoto");
+      const pieno = el.querySelector("#pieno");
+      const anteprima = el.querySelector("#anteprima");
+      const nome = el.querySelector("#nome");
       const stato = el.querySelector("#stato");
+      const bottone = el.querySelector("#scegli");
+
+      const mostra = (p, testo, tipo) => {
+        if (p) {
+          vuoto.hidden = true; pieno.hidden = false;
+          anteprima.src = p.data; nome.textContent = p.name;
+          bottone.textContent = "Cambia immagine";
+        }
+        stato.textContent = testo; stato.className = "stato " + tipo;
+      };
 
       const leggiAttesa = () => {
         try { return JSON.parse(sessionStorage.getItem(CHIAVE)) || el._attesa || null; }
@@ -237,27 +298,21 @@ caricatore = st.components.v2.component(
 
       el._invia = () => {
         const p = leggiAttesa();
-        if (!p || p.id === el._ack) return;               // già ricevuta: non reinvio
+        if (!p || p.id === el._ack) return;
         el._tentativi = el._tentativi || {};
         const n = (el._tentativi[p.id] || 0) + 1;
-        if (n > 5) {
-          stato.textContent = "Invio non riuscito: ricarica la pagina e riprova.";
-          return;
-        }
+        if (n > 5) { mostra(p, "Invio non riuscito: ricarica la pagina", "errore"); return; }
         el._tentativi[p.id] = n;
-        stato.textContent = "Invio dell'immagine in corso…";
+        mostra(p, "Caricamento…", "attesa");
         el._set("image", { ...p, tentativo: n });
       };
 
       const p = leggiAttesa();
-      if (p && p.id === el._ack) {
-        stato.textContent = "Immagine caricata: " + p.name;
-      }
+      if (p && p.id === el._ack) mostra(p, "Immagine caricata", "ok");
 
-      if (!el._init) {                                   // pulsanti e timer: una volta sola
+      if (!el._init) {
         el._init = true;
         const input = el.querySelector("#file");
-        const bottone = el.querySelector("#scegli");
 
         function leggiERidimensiona(file, maxLato) {
           return new Promise((resolve, reject) => {
@@ -284,7 +339,6 @@ caricatore = st.components.v2.component(
         input.onchange = async () => {
           const f = input.files && input.files[0];
           if (!f) return;
-          stato.textContent = "Preparazione dell'immagine…";
           try {
             const url = await leggiERidimensiona(f, 800);
             const nuova = { id: String(Date.now()), name: f.name, data: url };
@@ -292,7 +346,8 @@ caricatore = st.components.v2.component(
             try { sessionStorage.setItem(CHIAVE, JSON.stringify(nuova)); } catch (e) {}
             el._invia();
           } catch (e) {
-            stato.textContent = "Impossibile leggere il file: usa un'immagine JPG o PNG.";
+            mostra(null, "File non leggibile: usa un'immagine JPG o PNG", "errore");
+            vuoto.hidden = false; pieno.hidden = false;
           }
           input.value = "";
         };
@@ -303,10 +358,10 @@ caricatore = st.components.v2.component(
         document.addEventListener("visibilitychange", el._visibile);
         el._timer = setInterval(() => el._invia(), 4000);
 
-        if (p && p.id !== el._ack) el._invia();       // immagine rimasta in sospeso
+        if (p && p.id !== el._ack) el._invia();
       }
 
-      return () => {                                     // pulizia quando il componente sparisce
+      return () => {
         document.removeEventListener("visibilitychange", el._visibile);
         clearInterval(el._timer);
         el._init = false;
@@ -314,7 +369,6 @@ caricatore = st.components.v2.component(
     }
     """,
 )
-
 
 def carica_immagine():
     """Mostra il componente e restituisce l'immagine PIL ricevuta (o None)."""
@@ -517,7 +571,6 @@ opzioni_sede = [s for s in site_to_idx if s != '__unseen__']
 col_input, col_output = st.columns(2)
 
 with col_input:
-    st.markdown("**Carica un'immagine**")
     immagine_caricata = carica_immagine()
     eta = st.number_input("Età (lascia vuoto se non nota)", min_value=0, max_value=100, value=None, step=5)
     sesso = st.selectbox("Sesso", opzioni_sesso, format_func=lambda v: NOMI_SESSO.get(v, v))
