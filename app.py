@@ -612,8 +612,8 @@ with st.expander("Risultati"):
     st.image("cm_test.png")
     st.markdown(COMMENTO_CM)
     st.markdown("#### Metriche per classe")
-    st.image("metriche_classi.png")
-    st.markdown(COMMENTO_METRICHE)
+    st.image("contributi_clinici.png")
+    st.markdown(COMMENTO_CONTRIBUTO_CLINICI)
     st.markdown("#### Riepilogo")
     st.markdown(TABELLA_RISULTATI)
     st.caption("Il test set è stato usato una sola volta, al termine dello sviluppo. I valori quasi identici "
