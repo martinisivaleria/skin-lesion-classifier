@@ -546,9 +546,9 @@ modello si appoggia davvero alle informazioni cliniche.
 TABELLA_RISULTATI = """
 | Metrica | Validation | Test |
 |---|:---:|:---:|
-| Accuratezza | 85,7% | 85,6% |
+| Accuratezza | 85,2% | 85,6% |
 | F1 macro | 0,724 | 0,720 |
-| AUC macro | – | 0,967 |
+| AUC macro | 0,952 | 0,967 |
 """
 
 BIBLIOGRAFIA = """
@@ -681,8 +681,7 @@ with st.expander("Risultati"):
     st.markdown("#### Prestazioni del modello")
     st.markdown(TABELLA_RISULTATI)
     st.caption("Il test set è stato usato una sola volta, al termine dello sviluppo. I valori quasi identici "
-               "a quelli di validation indicano che il modello generalizza bene su lesioni mai viste. "
-               "L'AUC è stata calcolata solo sul test set.")
+               "a quelli di validation indicano che il modello generalizza bene su lesioni mai viste.")
 
 with st.expander("Bibliografia"):
     st.markdown(BIBLIOGRAFIA)
