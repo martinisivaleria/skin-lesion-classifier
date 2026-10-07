@@ -599,7 +599,7 @@ HTML_INTESTAZIONE = """
 <div class="intestazione">
   <div class="banda"><h1>Classificazione multimodale di lesioni cutanee</h1></div>
   <div class="info">
-    <p>Carica un'immagine dermoscopica di una lesione della pelle e, se li conosci, inserisci età, sesso e
+    <p>Carica l'immagine di una lesione della pelle e, se li conosci, inserisci età, sesso e
     sede della lesione. Premendo <b>Analizza</b>, il modello stima a quale di 8 tipi di lesione appartiene e
     mostra, con una mappa colorata, le zone dell'immagine su cui si è basato.</p>
     <p><span class="att">⚠️ Attenzione:</span> si tratta di un prototipo di ricerca sviluppato per un project
