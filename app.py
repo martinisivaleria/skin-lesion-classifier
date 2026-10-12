@@ -640,9 +640,9 @@ with col_input:
             ("carcinoma_basocellulare.jpg", "Carcinoma basocellulare"),
             ("cheratosi_benigna.jpg", "Cheratosi benigna"),
         ]
-        for riga in range(0, len(esempi), 2):
-            c1, c2 = st.columns(2)
-            for col, (file, nome) in zip((c1, c2), esempi[riga:riga + 2]):
+        for riga in range(0, len(esempi), 4):
+            c1, c2, c3, c4 = st.columns(4)
+            for col, (file, nome) in zip((c1, c2, c3, c4), esempi[riga:riga + 4]):
                 col.image(f"immagini/{file}", caption=nome, width="stretch")
         st.markdown(TESTO_ESEMPIO)
     immagine_caricata = carica_immagine()
