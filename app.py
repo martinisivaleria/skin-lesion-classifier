@@ -485,6 +485,17 @@ STILE_SCHEDE = """
 </style>
 """
 
+TESTO_ESEMPIO = """
+Il modello è stato addestrato su **immagini dermoscopiche** come questa, acquisite con un dermatoscopio:
+uno strumento che ingrandisce la pelle e la illumina in modo uniforme, senza riflessi.
+
+Se scatti la foto con il telefono, cerca di avvicinarti il più possibile a questo tipo di immagine:
+- **lesione al centro**;
+- **immagine a fuoco**;
+- **luce uniforme**;
+- **telefono parallelo alla pelle**.
+"""
+
 def html_schede_lesioni():
     schede = ""
     for file, nome, natura, classe, descrizione in LESIONI:
@@ -621,11 +632,15 @@ opzioni_sede = [s for s in site_to_idx if s != '__unseen__']
 col_input, col_output = st.columns(2)
 
 with col_input:
+    with st.popover("Che immagine caricare?"):
+        st.image("immagini/nevo.jpg", width=220, caption="Esempio di immagine dermoscopica")
+        st.markdown(TESTO_ESEMPIO)
     immagine_caricata = carica_immagine()
     eta = st.number_input("Età (lascia vuoto se non nota)", min_value=0, max_value=100, value=None, step=5)
     sesso = st.selectbox("Sesso", opzioni_sesso, format_func=lambda v: NOMI_SESSO.get(v, v))
     sede = st.selectbox("Sede anatomica", opzioni_sede, index=opzioni_sede.index('NaN'), format_func=lambda v: NOMI_SEDE.get(v, v))
-    avvia = st.button("Analizza", disabled=immagine_caricata is None)
+    avvia = st.button("Analizza", type="primary", width="stretch",
+                      icon=":material/search:", disabled=immagine_caricata is None)
 
 with col_output:
     if avvia:
