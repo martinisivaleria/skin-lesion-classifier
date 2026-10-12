@@ -486,7 +486,7 @@ STILE_SCHEDE = """
 """
 
 TESTO_ESEMPIO = """
-Il modello è stato addestrato su **immagini dermoscopiche** come questa, acquisite con un dermatoscopio:
+Il modello è stato addestrato su **immagini dermoscopiche** come queste, acquisite con un dermatoscopio:
 uno strumento che ingrandisce la pelle e la illumina in modo uniforme, senza riflessi.
 
 Se scatti la foto con il telefono, cerca di avvicinarti il più possibile a questo tipo di immagine:
@@ -633,7 +633,17 @@ col_input, col_output = st.columns(2)
 
 with col_input:
     with st.popover("Che immagine caricare?"):
-        st.image("immagini/nevo.jpg", width=220, caption="Esempio di immagine dermoscopica")
+        st.markdown("**Esempi di immagini dermoscopiche**")
+        esempi = [
+            ("nevo.jpg", "Nevo"),
+            ("melanoma.jpg", "Melanoma"),
+            ("carcinoma_basocellulare.jpg", "Carcinoma basocellulare"),
+            ("cheratosi_benigna.jpg", "Cheratosi benigna"),
+        ]
+        for riga in range(0, len(esempi), 2):
+            c1, c2 = st.columns(2)
+            for col, (file, nome) in zip((c1, c2), esempi[riga:riga + 2]):
+                col.image(f"immagini/{file}", caption=nome, width="stretch")
         st.markdown(TESTO_ESEMPIO)
     immagine_caricata = carica_immagine()
     eta = st.number_input("Età (lascia vuoto se non nota)", min_value=0, max_value=100, value=None, step=5)
